@@ -1,0 +1,652 @@
+omo configurar um banco de dados MySQL ou MongoDB para sua aplicação?
+Nesta seção, você verá como criar e configurar um banco de dados MySQL e
+MongoDB, definindo tabelas/coleções e tipos de dados de forma eficiente. Com
+isso, sua aplicação poderá armazenar e recuperar informações de maneira estruturada
+e segura. Além disso, discutiremos boas práticas para modelagem de dados,
+garantindo maior desempenho e integridade no banco de dados.
+Você aprenderá a estabelecer uma conexão entre uma aplicação Node.js e o
+MySQL/MongoDB, utilizando os pacotes mysql2 e mongoose. Exploraremos como
+executar consultas SQL, desde operações básicas como INSERT, SELECT, UPDATE e
+DELETE, até a manipulação segura dos dados utilizando prepared statements para
+evitar vulnerabilidades. Você verá também que o mongoose permite a criação de
+esquemas, validações e consultas de forma intuitiva. Ao final desta seção, você será
+capaz de integrar o MySQL e o MongoDB ao seu projeto e gerenciar informações de
+forma eficiente!
+8 CONEXÃO COM BANCO DE DADOS MYSQL E MONGODB
+Ao desenvolver aplicações web, frequentemente precisamos armazenar, recuperar e
+manipular informações, como usuários cadastrados, produtos de uma loja ou
+mensagens de um sistema de chat. Para isso, utilizamos bancos de dados, que
+permitem o armazenamento estruturado e eficiente dessas informações. Um dos
+bancos de dados relacionais mais utilizados é o MySQL, conhecido por sua
+confiabilidade, escalabilidade e fácil integração com diversas linguagens de
+programação.
+Em complemento, veremos o MongoDB, um dos principais SGBDs (Sistemas
+Gerenciadores de Banco de Dados) não relacionais (NoSQL), amplamente utilizado em
+aplicações web por sua escalabilidade, flexibilidade e armazenamento de dados no
+formato JSON. Quando combinado com o mongoose, facilita a manipulação dos dados,
+permitindo a definição de esquemas e validações de forma estruturada.
+Sendo assim, nesta seção, vamos aprender como configurar bancos de dados MySQL
+e MongoDB, conectar uma aplicação Node.js a estes bancos e executar consultas para
+manipulação de dados.
+8.1 Etapas de configuração do banco de dados MySQL
+Imagine que você está construindo uma aplicação web e precisa armazenar
+informações. Para isso, utilizamos um banco de dados relacional, como o MySQL, que
+nos permite organizar e recuperar dados de maneira eficiente. Mas como conectar esse
+banco à nossa aplicação Node.js? É aqui que entra o pacote mysql2, que facilita a
+comunicação entre o código JavaScript e o banco de dados.
+C
+60 | Página
+Antes de conectar um sistema ao MySQL, precisamos configurar o banco de dados.
+Para isso, siga os passos abaixo:
+a) Instalando o MySQL:
+Se você ainda não tem o MySQL instalado, pode baixá-lo no site oficial:
+https://dev.mysql.com/downloads/. Durante a instalação, selecione MySQL
+Server e MySQL Workbench. Alternativamente, você pode utilizar o XAMPP, que já vem
+com o MySQL incluso (https://www.apachefriends.org/pt_br/index.html).
+b) Criando um banco de dados:
+Após instalar e iniciar o MySQL, acesse o terminal ou o MySQL Workbench e execute o
+seguinte comando SQL para criar um banco de dados:
+CREATE DATABASE minha_aplicacao;
+c) Criando uma tabela:
+Agora, dentro do banco de dados criado, crie uma tabela para armazenar informações
+de usuários:
+USE minha_aplicacao;
+CREATE TABLE usuarios (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ nome VARCHAR(100) NOT NULL,
+ email VARCHAR(100) UNIQUE NOT NULL,
+ senha VARCHAR(255) NOT NULL
+);
+Esse comando cria uma tabela chamada usuarios com colunas para armazenar id,
+nome, email e senha.
+8.2 Instalação do pacote mysql2 via Node.js
+Já ouviu falar no mysql2? Esse módulo do Node.js é uma versão otimizada do mysql,
+oferecendo suporte a promises e async/await, o que facilita muito o trabalho com
+bancos de dados MySQL. Com ele, você pode conectar, executar queries e obter
+resultados de forma eficiente e sem complicações.
+Agora que o banco de dados está configurado, vamos conectar uma aplicação Node.js
+ao MySQL utilizando o pacote mysql2. Esse pacote facilita a comunicação entre a
+aplicação e o banco de dados.
+a) Instalando o pacote mysql2:
+Abra o terminal e execute:
+mkdir meu-projeto && cd meu-projeto
+npm init -y
+61 | Página
+No terminal, dentro do diretório do projeto Node.js, execute o seguinte comando para
+instalar as dependências:
+npm install mysql2 dotenv
+O pacote dotenv será utilizado para armazenar as credenciais do banco de dados de
+forma segura.
+b) Criando um arquivo de conexão:
+Crie um arquivo chamado db.js e adicione o seguinte código para configurar a
+conexão com o MySQL:
+require('dotenv').config();
+const mysql = require('mysql2');
+const connection = mysql.createConnection({
+ host: process.env.DB_HOST,
+ user: process.env.DB_USER,
+ password: process.env.DB_PASS,
+ database: process.env.DB_NAME
+});
+connection.connect(err => {
+ if (err) {
+ console.error('Erro ao conectar ao MySQL:', err);
+ return;
+ }
+ console.log('Conectado ao banco de dados MySQL!');
+});
+module.exports = connection;
+Aqui, estamos carregando as configurações do banco de dados a partir de um arquivo
+.env, garantindo maior segurança.
+c) Criando um arquivo .env:
+Crie um arquivo chamado .env e adicione suas credenciais do MySQL:
+DB_HOST=localhost
+DB_USER=root
+DB_NAME=minha_aplicacao
+DB_PASS=senha123
+Isso evita que credenciais fiquem expostas no código.
+62 | Página
+8.3 Manipulação de registros utilizando Node.js e MySQL
+Você sabia que usar prepared statements com o módulo mysql2 no Node.js pode
+deixar suas consultas mais seguras e eficientes? Com eles, você evita SQL Injection e
+melhora a performance ao reutilizar as mesmas queries com diferentes valores. Basta
+usar placeholders (?) nos comandos SQL e passar os parâmetros separadamente.
+Agora que temos a conexão com o banco de dados configurada, vamos aprender a
+executar consultas SQL para inserir, buscar, atualizar e excluir dados. O termo CRUD é
+um conjunto de operações fundamentais para manipulação de dados:
+• Create (criar): inserir dados na tabela.
+• Read (ler): consultar dados do banco.
+• Update (atualizar): modificar informações existentes.
+• Delete (excluir): remover registros.
+a) Inserindo dados no banco de dados:
+No arquivo crud.js, reunimos todas as funções necessárias para inserir, listar,
+atualizar e excluir usuários no banco de dados MySQL usando Node.js. Isso facilita a
+organização do código, tornando a manutenção mais simples e eficiente. Com esse
+arquivo, você pode centralizar todas as operações do CRUD de forma modular e
+reutilizável.
+Para criar uma função para inserir um usuário utilizamos as seguintes instruções
+(atente-se para a estrutura dos comandos SQL utilizando prepared statements):
+const connection = require("./db");
+const inserirUsuario = (nome, email, senha) => {
+ const sql = 'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)';
+ connection.query(sql, [nome, email, senha], (err, result) => {
+ if (err) {
+ console.error('Erro ao inserir usuário:', err);
+ return;
+ }
+ console.log('Usuário inserido com sucesso! ID:', result.insertId);
+ });
+};
+Chamar essa função com os parâmetros corretos adicionará um usuário ao banco de
+dados.
+b) Buscando dados do banco de dados:
+Podemos listar os usuários cadastrados no banco de dados utilizando a seguinte
+instrução:
+const listarUsuarios = () => {
+ const sql = 'SELECT * FROM usuarios';
+ connection.query(sql, (err, results) => {
+63 | Página
+ if (err) {
+ console.error('Erro ao buscar usuários:', err);
+ return;
+ }
+ console.log('Usuários:', results);
+ });
+};
+Isso retorna todos os registros da tabela usuarios.
+c) Atualizando dados do banco de dados:
+Para atualizar um usuário, utilizamos a seguinte instrução:
+const atualizarUsuario = (id, nome) => {
+ const sql = 'UPDATE usuarios SET nome = ? WHERE id = ?';
+ connection.query(sql, [nome, id], (err, result) => {
+ if (err) {
+ console.error('Erro ao atualizar usuário:', err);
+ return;
+ }
+ console.log('Usuário atualizado com sucesso!');
+ });
+};
+d) Excluindo dados do banco de dados:
+Para excluir um usuário utilizamos a seguinte função:
+const excluirUsuario = (id) => {
+ const sql = 'DELETE FROM usuarios WHERE id = ?';
+ connection.query(sql, [id], (err, result) => {
+ if (err) {
+ console.error('Erro ao excluir usuário:', err);
+ return;
+ }
+ console.log('Usuário excluído com sucesso!');
+ });
+};
+Para finalizar, no final do arquivo crud.js, acrescente estas linhas:
+// Exportando todas as funções para serem usadas em outros arquivos
+module.exports = { inserirUsuario, listarUsuarios, atualizarUsuario,
+excluirUsuario };
+64 | Página
+e) Testando as consultas no banco de dados:
+Crie um arquivo test.js para executar testes no banco e insira as seguintes linhas:
+const { inserirUsuario, listarUsuarios, atualizarUsuario, excluirUsuario } =
+require("./crud");
+// Teste: Inserir um usuário
+// inserirUsuario("Maria Souza", "maria@email.com", "senha123");
+// Teste: Listar usuários
+// listarUsuarios();
+// Teste: Atualizar um usuário (ID 1 para "Maria Pereira")
+// atualizarUsuario(1, "Maria Pereira");
+// Teste: Listar usuários
+// listarUsuarios();
+// Teste: Excluir um usuário (ID 1)
+// excluirUsuario(1);
+// Teste: Listar usuários
+// listarUsuarios();
+Execute no terminal:
+node test.js
+O código do arquivo test.js está importando as funções do arquivo crud.js e
+testando as operações de inserção, listagem, atualização e exclusão de usuários no
+banco de dados MySQL.
+Na sequência, é apresentado um projeto convertido para utilizar Sequelize (que será
+abordado com mais detalhes nas seções seguintes) no lugar de mysql2 com prepared
+statements. Ele inclui a configuração do banco de dados, definição do modelo Usuario
+e as operações CRUD de forma otimizada. Crie um arquivo crud.js e insira estas
+informações:
+// Configurando a conexão com o banco de dados usando Sequelize
+require('dotenv').config();
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER,
+process.env.DB_PASS, {
+ host: process.env.DB_HOST,
+ dialect: 'mysql',
+ logging: false // Desativa logs SQL no console
+});
+// Testando a conexão
+sequelize.authenticate()
+ .then(() => console.log('Conectado ao banco de dados MySQL com
+Sequelize!'))
+65 | Página
+ .catch(err => console.error('Erro ao conectar ao MySQL:', err));
+// Definindo o modelo Usuario
+const Usuario = sequelize.define('Usuario', {
+ id: {
+ type: DataTypes.INTEGER,
+ autoIncrement: true,
+ primaryKey: true
+ },
+ nome: {
+ type: DataTypes.STRING,
+ allowNull: false
+ },
+ email: {
+ type: DataTypes.STRING,
+ allowNull: false,
+ unique: true
+ },
+ senha: {
+ type: DataTypes.STRING,
+ allowNull: false
+ }
+}, {
+ tableName: 'usuarios',
+ timestamps: false // Desativa colunas createdAt e updatedAt
+});
+// Sincronizar modelo com o banco de dados
+sequelize.sync()
+ .then(() => console.log('Modelo sincronizado com o banco de dados'))
+ .catch(err => console.error('Erro ao sincronizar modelo:', err));
+// Funções CRUD utilizando Sequelize
+// Inserindo um usuário
+const inserirUsuario = async (nome, email, senha) => {
+ try {
+ const usuario = await Usuario.create({ nome, email, senha });
+ console.log('Usuário inserido com sucesso! ID:', usuario.id);
+ } catch (err) {
+ console.error('Erro ao inserir usuário:', err);
+66 | Página
+ }
+};
+// Listando usuários
+const listarUsuarios = async () => {
+ try {
+ const usuarios = await Usuario.findAll();
+ console.log('Usuários:', usuarios);
+ } catch (err) {
+ console.error('Erro ao buscar usuários:', err);
+ }
+};
+// Atualizando um usuário
+const atualizarUsuario = async (id, nome) => {
+ try {
+ const usuario = await Usuario.update({ nome }, { where: { id } });
+ console.log('Usuário atualizado com sucesso!');
+ } catch (err) {
+ console.error('Erro ao atualizar usuário:', err);
+ }
+};
+// Excluindo um usuário
+const excluirUsuario = async (id) => {
+ try {
+ await Usuario.destroy({ where: { id } });
+ console.log('Usuário excluído com sucesso!');
+ } catch (err) {
+ console.error('Erro ao excluir usuário:', err);
+ }
+};
+// Exportando funções CRUD
+module.exports = { inserirUsuario, listarUsuarios, atualizarUsuario,
+excluirUsuario };
+Agora, para testar as operações CRUD, crie um arquivo test.js e adicione:
+const { inserirUsuario, listarUsuarios, atualizarUsuario, excluirUsuario } =
+require("./crud");
+// Teste: Inserir um usuário
+// inserirUsuario("Maria Souza", "maria@email.com", "senha123");
+67 | Página
+// Teste: Listar usuários
+// listarUsuarios();
+// Teste: Atualizar um usuário (ID 1 para "Maria Pereira")
+// atualizarUsuario(1, "Maria Pereira");
+// Teste: Listar usuários
+// listarUsuarios();
+// Teste: Excluir um usuário (ID 1)
+// excluirUsuario(1);
+// Teste: Listar usuários
+// listarUsuarios();
+Depois, execute no terminal:
+node test.js
+Com o Sequelize, a manipulação de dados fica mais organizada e orientada a objetos,
+garantindo maior flexibilidade e segurança no CRUD do MySQL.
+Você pode optar por utilizar prepared statements ou Sequelize, dependendo da
+necessidade do seu projeto. Prepared statements, usados com o pacote mysql2, são
+uma forma eficiente e segura de executar queries SQL diretamente, prevenindo ataques
+como SQL Injection e melhorando a performance ao reutilizar consultas précompiladas. Essa abordagem é recomendada para projetos que exigem maior controle
+sobre as queries ou quando se deseja evitar abstrações adicionais.
+Já o Sequelize é um ORM (Object-Relational Mapping) que facilita a manipulação do
+banco de dados ao permitir a definição de modelos e consultas usando JavaScript, sem
+a necessidade de escrever SQL diretamente. Ele melhora a organização do código,
+simplifica operações complexas e facilita a portabilidade entre diferentes bancos de
+dados. No entanto, pode ter um desempenho ligeiramente inferior em relação ao uso
+direto de prepared statements, especialmente em cenários de alta demanda. Assim, a
+escolha entre prepared statements e Sequelize deve levar em conta fatores como
+complexidade do projeto, necessidade de abstração e otimização de desempenho.
+8.4 Recursos do pacote mongoose e o banco MongoDB Atlas
+O NoSQL trouxe flexibilidade ao mundo tabular dos bancos de dados. O MongoDB, em
+particular, tornou-se uma excelente opção para armazenar documentos JSON não
+estruturados. Os dados começam como JSON na interface do usuário e passam por
+pouquíssimas transformações para serem armazenados, de modo que obtemos
+benefícios com o aumento do desempenho e a diminuição do tempo de
+processamento.
+Mas, NoSQL não significa uma completa falta de estrutura. Ainda precisamos validar e
+converter nossos dados antes de armazená-los, e ainda podemos precisar aplicar
+alguma lógica de negócios a eles. Recebemos dados e precisamos validá-los para
+garantir que o que recebemos é o que precisamos. Também podemos precisar
+68 | Página
+processar os dados de alguma forma antes de salvá-los. É aqui que o Mongoose entra
+em ação.
+Mongoose é um pacote NPM para aplicativos Node.js. Ele permite definir esquemas
+para que nossos dados se encaixem, além de abstrair o acesso ao MongoDB. Dessa
+forma, podemos garantir que todos os documentos salvos compartilhem uma estrutura
+e contenham as propriedades necessárias.
+O pacote mongoose conecta seus clusters ou coleções do MongoDB com seu
+aplicativo Node.js. Ele permite que você crie esquemas para seus documentos. O
+Mongoose fornece muitas funcionalidades ao criar e trabalhar com esquemas. Nesta
+seção, veremos um exemplo de como conectar uma instância do MongoDB com um
+aplicativo Node.js.
+O MongoDB é um dos bancos de dados NoSQL mais usados atualmente no mundo dos
+desenvolvedores. Os bancos de dados NoSQL permitem que os desenvolvedores
+enviem e recuperem dados como documentos JSON, em vez de objetos SQL. Para
+trabalhar com o MongoDB em um aplicativo Node.js, podemos usar o Mongoose.
+Para isso, desenvolveremos uma aplicação Node.js simples para se conectar ao cluster
+do MongoDB Atlas antes que o Node.js execute o servidor na porta 8080. O MongoDB
+Atlas é um banco de dados MongoDB na nuvem, permitindo armazenar dados sem
+precisar instalar o banco localmente. Para criar uma conta no MongoDB Atlas, execute
+os seguintes passos:
+1. Acesse https://www.mongodb.com/cloud/atlas e clique em “Try free”
+para criar uma conta gratuita.
+2. Após o cadastro, acesse o MongoDB Atlas Dashboard (página inicial da
+plataforma).
+3. Caso não tenha um projeto criado, clique em “New Project”, dê um nome para o
+projeto e clique em “Next”.
+4. Para finalizar, clique em “Create Project”.
+5. No menu “Database”, clique em “Clusters”.
+6. Na página exibida, clique em “Build a Cluster” e escolha a opção “Free” (para
+criar um cluster grátis).
+7. No campo do nome do cluster, escolha um nome para seu cluster (exemplo:
+“MyCluster”).
+8. Selecione o provedor desejado (AWS, por exemplo) e a região mais próxima para
+melhor performance (São Paulo, por exemplo).
+9. Clique em “Create Deployment” e aguarde o processo ser finalizado.
+10. Após a criação do cluster, vá até “Security” e depois ”Database Access” e clique
+na opção “Add New Database User”.
+11. Escolha um nome de usuário e senha (anote essa informação, pois será usada
+na conexão).
+12. Defina a permissão em “Built-in Role” como “Atlas Admin” para ter acesso total
+ao banco de dados e clique em “Add User”.
+13. Vá até “Security“, depois em “Network Access” e acesse a opção “Add IP
+Address”.
+14. Selecione “Allow Access From Anywhere” e clique em “Confirm”.
+15. Vá até “Database“, depois em “Clusters” e acesse a opção “Connect”.
+16. Na seção “Connect to your application”, selecione a opção “Drivers”.
+69 | Página
+17. Copie a string de conexão fornecida no passo 3 desta tela, que será parecida
+com:
+mongodb+srv://edinilson:<db_password>@meucluster.c50ap.mongodb.net/?retryWrite
+s=true&w=majority&appName=MeuCluster
+18. Substitua o usuário e senha pelos dados do usuário criado e copie essa string
+para o próximo passo.
+ATENÇÃO:
+Nunca compartilhe sua connection string do MongoDB Atlas
+publicamente, pois ela contém credenciais sensíveis que podem
+comprometer a segurança do seu banco de dados. Para proteger suas
+informações, utilize variáveis de ambiente com dotenv e armazene a
+conexão de forma segura no servidor!
+Veja a seguir um exemplo de uma aplicação que realiza a conexão com o MongoDB
+Atlas, a versão do MongoDB na nuvem utilizando o pacote mongoose.
+//Importação de pacotes/módulos para uso da aplicação
+var express = require("express"); //Importação do pacote express
+var app = express(); //Inicialização da aplicação 'app' pelo pacote express
+//Importação do pacote mongoose
+var mongoose = require("mongoose");
+//Configuração da conexão com o MongoDB no serviço cloud MongoDB Atlas
+const uri =
+"mongodb+srv://edinilson:ed2021@cluster0.puysq.mongodb.net/?retryWrites=true&w
+=majority";
+//Validação da configuração da conexão com o MongoDB
+mongoose
+ .connect(uri, {
+ useNewUrlParser: true,
+ useUnifiedTopology: true
+ })
+ .then(() => {
+ console.log("A conexão com o MongoDB foi realizada com sucesso!");
+ })
+ .catch((err) => {
+ console.log(err);
+ });
+//Rota para exibir uma mensagem ao usuário
+app.get("/", (req, res) => {
+ res.send("Olá mundo! Esta é a página inicial da nossa aplicação.");
+});
+70 | Página
+//A porta é uma variável de ambiente
+const porta = process.env.PORT || 8080;
+app.listen(porta, () =>
+ console.log("Servidor inicializado na porta: " + porta)
+);
+Usando o método connect que o mongoose nos fornece, estamos primeiro passando
+a string de conexão armazenada na variável uri. Posteriormente, passamos alguns
+parâmetros auxiliares, como useNewUrlParser e useUnifiedTopology.
+O método connect retornará uma promessa (promise) do JavaScript, e precisaremos
+lidar com essa promessa. Para isso, é inserido um .then após o método e o comando
+console.log é acionado com uma mensagem de sucesso na situação em que tudo
+ocorra bem. Também inserimos um .catch responsável por detectar quaisquer erros
+se não pudermos nos conectar ao cluster do MongoDB Atlas.
+Para testar este exemplo, você precisará criar um projeto e instalar as dependências:
+express e mongoose. Posteriormente, cole o código-fonte apresentado anteriormente
+e substitua o valor da variável uri pelo valor da sua string de conexão, obtida em
+procedimentos anteriores, para ter acesso ao seu banco de dados no MongoDB Atlas.
+Assim, ao executar sua aplicação, caso a sua configuração com o MongoDB Atlas
+tenha sido realizada com sucesso, será exibida a seguinte mensagem no terminal: A
+conexão com o MongoDB foi realizada com sucesso!.
+Caso sejam exibidos erros no terminal, você deverá conferir se a sintaxe da sua string
+de conexão está correta ou refazer os procedimentos de configuração da sua conta do
+MongoDB Atlas.
+Saiba que o MongoDB é um banco de dados sem esquema. Ao trabalhar com Node.js,
+podemos usar o mongoose para definir um esquema para uma coleção do MongoDB.
+Um esquema do Mongoose define a forma dos documentos dentro de uma coleção
+específica. Acompanhe, a seguir, um esquema utilizando o mongoose.
+var mongoose = require("mongoose");
+var Schema = mongoose.Schema;
+var UsuarioEsquema = new Schema({
+ nome: String,
+ login: String,
+ senha: String
+});
+module.exports = mongoose.model("Usuario", UsuarioEsquema);
+Este arquivo, nomeado, por exemplo, como usuario.js está dentro de uma pasta
+modelo. Destacamos que, para este projeto, também há a necessidade de instalarmos
+o pacote mongoose. Na sequência, podemos observar que, neste arquivo, temos a
+importação do pacote mongoose para podermos utilizar todas as funcionalidades que
+ele nos oferece.
+71 | Página
+Posteriormente, chamamos o construtor Schema para criar uma instância chamada de
+UsuarioEsquema deste esquema. A instância do esquema agora é usada para definir
+um esquema contendo os seguintes atributos: nome, login e senha. Todos estes
+atributos são do tipo String.
+No MongoDB, ao contrário de bancos relacionais, não é necessário criar o banco de
+dados e as coleções manualmente. Assim que sua aplicação estabelece a conexão e
+insere o primeiro documento, o MongoDB cria automaticamente o banco de dados e a
+coleção correspondente, tornando o processo mais dinâmico e flexível.
+ATENÇÃO:
+A maioria desses tipos de dados será familiar para os desenvolvedores. Se
+você não estiver familiarizado com os tipos de dados, basta definir o tipo
+de dados que você armazenará. Por exemplo, um nome será String porque
+é texto. Um preço ou idade será um Number porque é um valor numérico.
+Um valor lógico é um valor verdadeiro ou falso, podendo ser definido pelo
+tipo Boolean.
+Posteriormente, precisaremos exportar este módulo para ser utilizado em outros
+projetos, por isso utilizamos o comando module.exports. O primeiro parâmetro do
+comando mongoose.model é o nome da coleção que conterá os documentos que,
+neste caso, é Usuario. O segundo parâmetro é o esquema que definimos
+anteriormente, nomeado como UsuarioEsquema.
+Agora este modelo está pronto para ser importado e usado para criar dados seguindo
+nosso esquema na coleção Usuario. Este é um padrão de desenvolvimento comum
+ao usar Node.js e MongoDB. Para importar este esquema em algum projeto
+desenvolvido em Node.js, utilize a seguinte instrução:
+var Usuario = require("./modelo/usuario");
+Como você viu, para configurar o MongoDB Atlas, primeiro, acesse MongoDB Atlas e
+crie uma conta. Após o login, crie um novo cluster e selecione a região desejada. Em
+seguida, configure um usuário com permissões seguras e adicione seu IP à lista de
+acesso para permitir conexões externas. Depois, copie a connection string e utilize-a
+no seu projeto, armazenando-a de forma segura em um arquivo .env com dotenv.
+Para testar a conexão, você pode usar o Mongoose com o seguinte parâmetro:
+mongoose.connect(process.env.MONGO_URI), garantindo que sua aplicação
+possa interagir com o banco de dados de forma eficiente e segura.
+8.5 Manipulação de registros utilizando Node.js e MongoDB Atlas
+A seguir, você aprenderá a criar uma aplicação estruturada com Express.js e Mongoose,
+incluindo organização de diretórios e implementação básica de rotas, controladores e
+modelos. Vamos lá!
+a) Instalando o Node.js e Express.js:
+Crie a pasta do projeto e inicialize o NPM:
+72 | Página
+mkdir meu-projeto-express
+cd meu-projeto-express
+npm init -y # Gera o package.json
+Instale o Express.js e outros pacotes essenciais:
+npm install express dotenv ejs body-parser mongoose
+Na sequência, você pode acompanhar a explicação de cada pacote:
+• express é um framework web para Node.js.
+• dotenv é usado no gerenciamento de variáveis de ambiente.
+• ejs é um template engine para renderizar HTML.
+• body-parser é um middleware para processar dados enviados via POST.
+• mongoose é uma biblioteca para modelagem de banco de dados MongoDB.
+b) Criando a estrutura de diretórios:
+Dentro da pasta do projeto, crie os diretórios organizados (public, routes,
+controllers, models e views):
+mkdir public routes controllers models views
+c) Configurando o servidor (server.js):
+Crie um arquivo server.js na raiz do projeto e adicione (este arquivo será
+responsável por inicializar nosso servidor):
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const app = express();
+// Conectar ao banco de dados (MongoDB)
+mongoose.connect(process.env.DATABASE_URL, {
+ useNewUrlParser: true,
+ useUnifiedTopology: true
+});
+// Configurações do Express
+app.set('view engine', 'ejs'); // Definir EJS como template engine
+app.use(express.static('public')); // Pasta para arquivos estáticos
+app.use(bodyParser.urlencoded({ extended: true }));
+// Importando Rotas
+const userRoutes = require('./routes/users');
+app.use('/users', userRoutes);
+// Inicializar o servidor
+const PORT = process.env.PORT || 3000;
+73 | Página
+app.listen(PORT, () => {
+ console.log(`Servidor rodando na porta ${PORT}`);
+});
+d) Criando rotas (routes/users.js):
+No diretório routes/, crie o arquivo users.js e defina as rotas:
+const express = require('express');
+const router = express.Router();
+const userController = require('../controllers/userController');
+// Definir rotas
+router.get('/', userController.listarUsuarios);
+router.get('/novo', userController.formNovoUsuario);
+router.post('/novo', userController.criarUsuario);
+module.exports = router;
+e) Criando o controlador (controllers/userController.js):
+Agora, crie o arquivo controllers/userController.js para definir a lógica das
+rotas:
+const User = require('../models/User');
+// Listar usuários
+exports.listarUsuarios = async (req, res) => {
+ const usuarios = await User.find();
+ res.render('users/index', { usuarios });
+};
+// Formulário para novo usuário
+exports.formNovoUsuario = (req, res) => {
+ res.render('users/new');
+};
+// Criar novo usuário
+exports.criarUsuario = async (req, res) => {
+ const novoUsuario = new User({
+ nome: req.body.nome,
+ email: req.body.email
+ });
+ await novoUsuario.save();
+ res.redirect('/users');
+};
+74 | Página
+Lembrando que este código configura um servidor Express.js integrado com MongoDB
+utilizando Mongoose. Primeiro, ele carrega variáveis de ambiente com dotenv,
+configura o Express com suporte a templates EJS e arquivos estáticos, além de usar
+body-parser para processar requisições.
+Em seguida, estabelece a conexão com o banco de dados MongoDB e importa as rotas
+definidas em ./routes/users, vinculando-as ao caminho /users. Por fim, o
+servidor é iniciado na porta definida no .env ou na 3000, exibindo uma mensagem no
+console ao ser iniciado.
+f) Criando o modelo (models/User.js):
+No diretório models/, crie o arquivo User.js para definir o esquema do banco de
+dados:
+const mongoose = require('mongoose');
+const userSchema = new mongoose.Schema({
+ nome: String,
+ email: String
+});
+module.exports = mongoose.model('User', userSchema);
+g) Criando as visualizações (views/users/index.ejs e views/users/new.ejs):
+No diretório views/users/, crie o arquivo index.ejs para exibir a lista de usuários:
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+ <title>Lista de Usuários</title>
+</head>
+<body>
+ <h1>Usuários</h1>
+ <ul>
+ <% usuarios.forEach(usuario => { %>
+ <li><%= usuario.nome %> - <%= usuario.email %></li>
+ <% }); %>
+ </ul>
+ <a href="/users/novo">Adicionar Novo Usuário</a>
+</body>
+</html>
+Agora, crie a view do formulário em views/users/new.ejs:
+<!DOCTYPE html>
+<html lang="pt">
+75 | Página
+<head>
+ <title>Novo Usuário</title>
+</head>
+<body>
+ <h1>Adicionar Novo Usuário</h1>
+ <form action="/users/novo" method="POST">
+ <label for="nome">Nome:</label>
+ <input type="text" id="nome" name="nome" required>
+ <label for="email">Email:</label>
+ <input type="email" id="email" name="email" required>
+ <button type="submit">Salvar</button>
+ </form>
+</body>
+</html>
+Esta view, por meio do formulário, será responsável por adicionar os usuários no banco
+de dados.
+h) Configurando as variáveis de ambiente (.env):
+Crie um arquivo .env na raiz do projeto para armazenar variáveis como o URL do banco
+de dados:
+DATABASE_URL=mongodb+srv://edinilson:<db_password>@meucluster.c50ap.mongodb.ne
+t/?retryWrites=true&w=majority&appName=MeuCluster
+PORT=3000
+i) Testando a aplicação:
+Agora, inicie o servidor:
+node server.js
+Acesse http://localhost:3000/users no navegador e veja sua aplicação
+funcionando!
+Aprendemos a configurar um banco de dados MySQL e MongoDB Atlas, conectar uma
+aplicação Node.js utilizando os pacotes mysql2 e mongoose, bem como executar
+consultas SQL para manipulação de dados. Agora, você pode integrar bancos de dados
+MySQL e MongoDB em seus projetos e garantir a persistência dos dados de maneira
+eficiente.
