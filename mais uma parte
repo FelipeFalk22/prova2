@@ -1,0 +1,497 @@
+Node.js utiliza um modelo não bloqueante e baseado em eventos. Existem três
+abordagens principais para lidar com a assíncronicidade: callbacks, promises e
+async/await. Cada uma dessas abordagens tem suas particularidades, vantagens e
+desvantagens.
+a) Callbacks: o início da assíncronicidade:
+Callbacks são funções passadas como argumento para outras funções e executadas
+quando uma operação assíncrona é concluída. Essa abordagem foi uma das primeiras
+formas de gerenciar código assíncrono em JavaScript e é amplamente usada em
+funções da API padrão do Node.js, como leitura de arquivos. Veja um exemplo de
+callback:
+const fs = require('fs');
+fs.readFile('arquivo.txt', 'utf8', (err, data) => {
+ if (err) {
+ console.error('Erro ao ler o arquivo:', err);
+ return;
+ }
+ console.log('Conteúdo do arquivo:', data);
+});
+Nesse exemplo, readFile recebe um callback que será executado somente após a
+leitura do arquivo ser concluída. Se ocorrer um erro, ele é tratado dentro do próprio
+callback.
+Quando temos várias operações assíncronas encadeadas, os callbacks podem se
+tornar aninhados, resultando no temido callback hell. Se você já programou em
+JavaScript, é bem provável que tenha se deparado com esse problema.
+Callback hell acontece quando temos muitas funções assíncronas aninhadas, criando
+um código difícil de entender e manter. Imagine um monte de funções dentro de
+funções, formando uma estrutura em cascata, parecendo uma “pirâmide da perdição”.
+Isso torna o código confuso e complicado de depurar. Para evitar esse problema,
+usamos promises e async/await, que deixam o código mais limpo e legível.
+Exemplo de um callback hell:
+buscarUsuario(1, (usuario) => {
+ buscarPedidos(usuario.id, (pedidos) => {
+ buscarDetalhesDoPedido(pedidos[0].id, (detalhes) => {
+ console.log('Detalhes do pedido:', detalhes);
+ });
+ });
+});
+Esse código se torna difícil de ler e manter, pois cada função depende da anterior. Para
+resolver esse problema, utilizamos promises.
+20 | Página
+b) Promises: melhorando a leitura do código:
+Promises são objetos que representam o resultado de uma operação assíncrona,
+podendo ser resolvidas (fulfilled) ou rejeitadas (rejected). Isso permite evitar o
+aninhamento de callbacks e melhorar a estrutura do código. Veja um exemplo de como
+criar uma promise:
+function lerArquivoPromise() {
+ return new Promise((resolve, reject) => {
+ fs.readFile('arquivo.txt', 'utf8', (err, data) => {
+ if (err) reject(err);
+ else resolve(data);
+ });
+ });
+}
+lerArquivoPromise()
+ .then(data => console.log('Conteúdo:', data))
+ .catch(err => console.error('Erro:', err));
+Aqui, lerArquivoPromise retorna uma promise, que pode ser manipulada utilizando
+.then() para capturar o sucesso e .catch() para capturar erros.
+Veja um exemplo de encadeamento de promises:
+buscarUsuario(1)
+ .then(usuario => buscarPedidos(usuario.id))
+ .then(pedidos => buscarDetalhesDoPedido(pedidos[0].id))
+ .then(detalhes => console.log('Detalhes:', detalhes))
+ .catch(err => console.error('Erro:', err));
+Esse código é um exemplo de encadeamento de promises, que é uma técnica usada
+para lidar com múltiplas operações assíncronas de forma mais organizada e legível. O
+encadeamento de promises evita o problema de callback hell (ou “aninhamento
+excessivo de callbacks"), onde você teria que aninhar múltiplas funções de callback,
+tornando o código difícil de ler e manter. Com as promises encadeadas, cada operação
+assíncrona é claramente sequenciada, e o código fica mais legível e organizado.
+c) Async/await: o método mais simples e legível:
+Async/await é uma forma mais moderna e elegante de lidar com operações
+assíncronas. Ele permite escrever código assíncrono com aparência de código
+síncrono, tornando a leitura e manutenção mais fáceis.
+A palavra-chave async define uma função assíncrona, permitindo o uso de await para
+pausar sua execução até que a promise seja resolvida. Dessa forma, o código se
+assemelha ao estilo síncrono, mas sem bloquear a execução do programa.
+Reescrevendo a promise anterior com async/await temos o seguinte:
+21 | Página
+async function processarArquivo() {
+ try {
+ const data = await lerArquivoPromise();
+ console.log('Conteúdo:', data);
+ } catch (err) {
+ console.error('Erro:', err);
+ }
+}
+processarArquivo();
+Aqui, await pausa a execução da função até que a promise seja resolvida, sem precisar
+encadear .then() e .catch(). Veja um exemplo prático de async/await com
+múltiplas chamadas assíncronas:
+async function buscarInformacoesDoPedido() {
+ try {
+ const usuario = await buscarUsuario(1);
+ const pedidos = await buscarPedidos(usuario.id);
+ const detalhes = await buscarDetalhesDoPedido(pedidos[0].id);
+ console.log('Detalhes do pedido:', detalhes);
+ } catch (err) {
+ console.error('Erro ao buscar informações:', err);
+ }
+}
+Esse código é muito mais legível e organizado comparado ao callback hell. Embora os
+callbacks tenham sido a abordagem inicial, eles podem levar ao callback hell,
+dificultando a manutenção do código. Com o uso de promises, conseguimos uma
+estrutura mais organizada, mas a abordagem mais moderna e recomendada é o
+async/await, que proporciona código mais limpo e legível.
+2.3 Funções básicas de um servidor HTTP em Node.js
+Como você já viu, um servidor HTTP é um programa responsável por receber e
+responder requisições feitas por clientes, como navegadores ou aplicativos. Ele
+interpreta os pedidos enviados via protocolo HTTP/HTTPS, processa as informações e
+devolve um conteúdo adequado, como uma página HTML, um arquivo JSON ou uma
+imagem.
+No Node.js, podemos criar um servidor HTTP de forma simples e eficiente, aproveitando
+o modelo não bloqueante e baseado em eventos da plataforma. Isso permite que o
+servidor atenda a múltiplos clientes simultaneamente sem sobrecarga excessiva.
+Agora, mãos à obra! Vamos criar um servidor básico em Node.js utilizando o módulo
+nativo http. Crie um arquivo chamado server.js e adicione o seguinte código:
+22 | Página
+const http = require('http'); // Importa o módulo HTTP
+const server = http.createServer((req, res) => {
+ res.writeHead(200, { 'Content-Type': 'text/plain' }); // Define o
+cabeçalho da resposta
+ res.end('Olá, este é um servidor HTTP em Node.js!'); // Envia uma resposta
+ao cliente
+});
+server.listen(3000, () => {
+ console.log('Servidor rodando em http://localhost:3000');
+});
+Abra o terminal e execute:
+node server.js
+Agora, acesse http://localhost:3000 no browser e veja a resposta do seu
+servidor HTTP. Veja alguns pontos importantes deste código que merecem destaque:
+• http.createServer() cria um servidor que processa requisições HTTP.
+• req (request) representa a requisição do cliente.
+• res (response) representa a resposta enviada pelo servidor.
+• res.writeHead(200, { 'Content-Type': 'text/plain' }) define o
+status da resposta (200 significa "OK") e o tipo de conteúdo (text/plain).
+• res.end() finaliza a resposta, enviando o conteúdo para o cliente.
+• server.listen(3000) faz com que o servidor escute requisições na porta
+3000.
+Este é um exemplo simples, mas suficiente para demonstrar como um servidor HTTP
+pode ser criado e configurado. Dependendo das necessidades, podemos expandi-lo
+para manipular requisições dinâmicas, utilizar frameworks como Express.js e conectar
+a bancos de dados. Em complemento, nosso servidor pode responder com mais do que
+apenas texto! Vamos servir um arquivo HTML para o cliente. Atualize o código para
+carregar um arquivo HTML:
+const fs = require('fs');
+const server = http.createServer((req, res) => {
+ fs.readFile('index.html', (err, data) => {
+ if (err) {
+ res.writeHead(500, { 'Content-Type': 'text/plain' });
+ res.end('Erro interno no servidor');
+ } else {
+ res.writeHead(200, { 'Content-Type': 'text/html' });
+ res.end(data);
+ }
+ });
+});
+23 | Página
+Agora, crie um arquivo index.html na raiz do projeto e adicione o seguinte código:
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+ <meta charset="UTF-8">
+ <title>Servidor Node.js</title>
+</head>
+<body>
+ <h1>Bem-vindo ao meu servidor HTTP com Node.js!</h1>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+O desempenho do Node.js e a facilidade de codificação usando o Express.js são os
+recursos mais populares admirados pelos desenvolvedores de aplicativos da web. Com
+a ajuda do Express.js, você pode criar facilmente diferentes tipos de aplicativos da web
+em um curto período de tempo.
+Assim, o Express.js é responsável por gerenciar roteamento, sessões, solicitações
+HTTP, tratamento de erros etc. Dito isto, vamos agora avançar e descobrir os vários
+recursos desse framework.
+Abaixo, apresentamos alguns dos recursos mais importantes do Express.js:
+• Acelera o ritmo de desenvolvimento de um aplicativo da web.
+• Ajuda na criação de aplicativos móveis e da web de tipos de página única (SPA
+– Single Page Applications), várias páginas e híbridos.
+• Segue a arquitetura MVC (Model-View-Controller)
+• Facilita o processo de integração com bancos de dados, como MongoDB, Redis
+e MySQL.
+• Define um middleware de tratamento de erros.
+• Ajuda a simplificar as etapas de configuração e personalização do aplicativo.
+Em termos gerais, o Express.js é um framework de aplicativo da web construído sobre
+o Node.js. Ele fornece uma interface mínima com todas as ferramentas necessárias
+para construir uma aplicação web.
+O Express.js adiciona flexibilidade a um aplicativo com uma enorme variedade de
+módulos disponíveis no npm ou yarn que você pode conectar diretamente ao Express
+conforme a necessidade. Ele ajuda no gerenciamento fácil do fluxo de dados entre o
+servidor e as rotas nos aplicativos do lado do servidor.
+3.1 Processo de instalação e configuração do Express
+Antes de usar o Express.js, precisamos instalá-lo no nosso projeto. Para isso, você
+precisa ter o Node.js e o gerenciador de pacotes NPM instalados. Para conferir se estão
+instalados, basta rodar os seguintes comandos no terminal:
+node -v # Verifica a versão do Node.js
+npm -v # Verifica a versão do NPM
+Se tudo estiver certo, podemos criar um projeto e instalar o Express.js:
+27 | Página
+mkdir meu-projeto-express
+cd meu-projeto-express
+npm init -y # Cria o arquivo package.json automaticamente
+npm install express # Instala o Express.js
+Isso criará um diretório com um arquivo package.json, que armazenará as
+dependências do projeto, incluindo o Express. Agora podemos configurar um servidor
+básico com Express. Crie um arquivo server.js e adicione o seguinte código:
+const express = require('express');
+const app = express();
+app.get('/', (req, res) => {
+ res.send('Bem-vindo ao meu servidor Express!');
+});
+app.listen(3000, () => {
+ console.log('Servidor rodando na porta 3000');
+});
+Agora, rode o servidor:
+node server.js
+Abra o navegador e acesse http://localhost:3000. Se tudo estiver certo, você
+verá a mensagem Bem-vindo ao meu servidor Express!.
+Vejamos um outro exemplo de aplicação desenvolvida utilizando Node.js. Após a
+criação do projeto, crie um arquivo chamado index.js e insira o código apresentado
+na sequência:
+const http = require("http");
+const hostname = "127.0.0.1";
+const port = "4000";
+const server = http.createServer((req, res) => {
+ res.statusCode = 200;
+ res.setHeader("Content-Type", "text/plain");
+ res.end("Oi mundo!");
+});
+server.listen(port, hostname, () => {
+ console.log("Servidor está rodando no endereço: " + hostname + " e na porta:
+" + port);
+});
+Para executá-lo, digite o seguinte comando node index.js e aguarde o
+processamento. Veja que a mensagem Oi mundo foi renderizada no browser e a
+mensagem Servidor está rodando no endereço: 127.0.0.1 e na porta:
+28 | Página
+4000 foi exibida na área do terminal. Lembre-se que ao executar um programa no
+terminal, você pode fechá-lo com o comando Ctrl + C.
+Este código inclui primeiro o módulo http do Node.js. Assim, esta biblioteca padrão
+do Node.js é incrível, pois inclui um suporte de primeira classe para rede. O método
+createServer() do módulo http é responsável por criar um novo servidor HTTP.
+O servidor é configurado para escutar (executar) na porta 4000 e no hostname
+especificados, que no caso é 127.0.0.1. Quando o servidor está pronto, a função para
+exibir a mensagem é chamada e, posteriormente, é informado que o servidor está
+rodando.
+Sempre que uma nova solicitação é recebida, o evento da solicitação é chamado,
+fornecendo dois objetos: uma solicitação (req de request) e uma resposta (res de
+response). Esses dois objetos são essenciais para lidar com a chamada HTTP.
+O primeiro fornece os detalhes da solicitação. Neste exemplo simples, isto não é usado,
+mas você poderia acessar os cabeçalhos de solicitação e os dados da solicitação. O
+segundo é usado para retornar os dados para o chamador.
+Neste caso, com res.statusCode = 200 definimos a propriedade do código de
+status para 200, para indicar uma resposta bem-sucedida. Definimos o cabeçalho
+Content-Type com res.setHeader('Content-Type', 'text/plain') e
+terminamos fechando a resposta, acrescentando o conteúdo como um argumento para
+finalizar utilizando: res.end("Oi mundo!");.
+3.2 Conhecendo a estrutura de uma aplicação Express
+Se você já começou a desenvolver com Express.js, pode estar se perguntando: como
+estruturar minha aplicação de forma organizada? Afinal, conforme os projetos crescem,
+o código pode virar um grande emaranhado se não for bem organizado. Neste tópico,
+vamos explorar a estrutura recomendada para um projeto Express, garantindo que ele
+seja escalável e de fácil manutenção!
+Uma estrutura recomendada para um projeto Express.js pode seguir este modelo:
+meu-projeto-express/
+│-- node_modules/ # Dependências do projeto
+│-- public/ # Arquivos estáticos (CSS, imagens, scripts)
+│-- routes/ # Definição das rotas da aplicação
+│-- controllers/ # Lógica dos controladores
+│-- models/ # Modelos para manipulação de dados
+│-- views/ # Templates para renderização de páginas dinâmicas
+│-- server.js # Ponto de entrada da aplicação
+│-- package.json # Lista de dependências e scripts
+Imagine que você está construindo uma casa. Se cada cômodo estivesse bagunçado,
+com móveis espalhados aleatoriamente, seria difícil encontrar o que precisa, certo? O
+29 | Página
+mesmo acontece com um projeto de código! Quando organizamos a aplicação por
+módulos, conseguimos separar responsabilidades e tornar o desenvolvimento mais
+eficiente.
+Agora, vamos entender para que serve cada diretório e arquivo dentro da estrutura!
+a) node_modules/: dependências do projeto:
+Esse diretório é gerenciado pelo NPM e armazena todos os pacotes instalados para a
+aplicação. Ele é criado automaticamente ao executar:
+npm install
+E atenção: nunca altere manualmente os arquivos dentro da pasta node_modules,
+pois qualquer modificação será perdida ao reinstalar as dependências com o comando
+npm install!
+b) public/: arquivos estáticos:
+Aqui ficam os arquivos CSS, imagens e JavaScript do front-end. Se sua aplicação
+precisar carregar um arquivo de estilo ou uma imagem, ela buscará nessa pasta. Para
+servir arquivos estáticos no Express.js, adicionamos esta configuração no server.js:
+app.use(express.static('public'));
+Agora, qualquer arquivo dentro de public/ pode ser acessado diretamente no
+navegador.
+c) routes/: definição das rotas da aplicação:
+As rotas são os caminhos que nossa aplicação responde, como /usuarios,
+/produtos etc. Em vez de definir todas no server.js, podemos separá-las em
+arquivos dentro da pasta routes/.
+Veja um exemplo de rota criada no arquivo usuarios.js armazenado na pasta
+routes/:
+const express = require('express');
+const router = express.Router();
+router.get('/', (req, res) => {
+ res.send('Lista de usuários');
+});
+router.post('/', (req, res) => {
+ res.send('Usuário criado com sucesso!');
+});
+module.exports = router;
+Depois, importamos essas rotas no arquivo server.js:
+const usuariosRoutes = require('./routes/usuarios');
+app.use('/usuarios', usuariosRoutes);
+Agora, qualquer requisição feita para /usuarios será tratada no arquivo de rotas.
+30 | Página
+d) controllers/: controladores da aplicação:
+Os controladores são responsáveis por processar as regras de negócio da aplicação.
+Eles organizam a lógica antes de enviar a resposta para o usuário.
+Veja um exemplo de controlador chamado usuariosController.js armazenado
+em controllers/:
+exports.listarUsuarios = (req, res) => {
+ res.send('Lista de usuários vinda do controlador');
+};
+Dentro do arquivo de rotas, podemos chamar esse controlador:
+const express = require('express');
+const router = express.Router();
+const usuariosController = require('../controllers/usuariosController');
+router.get('/', usuariosController.listarUsuarios);
+module.exports = router;
+Isso mantém o código mais modular e organizado.
+e) models/: modelos para manipulação de dados:
+Se o projeto utilizar um banco de dados, é importante criar modelos para representar
+as tabelas ou coleções. Isso facilita a manipulação dos dados dentro da aplicação. Veja
+um exemplo de modelo Usuario.js para MySQL:
+const connection = require('../db');
+const Usuario = {
+ listarTodos: async () => {
+ const [rows] = await connection.promise().query('SELECT * FROM
+usuarios');
+ return rows;
+ }
+};
+module.exports = Usuario;
+Agora, podemos chamar Usuario.listarTodos() em qualquer lugar do código para
+buscar usuários.
+f) views/: templates para renderização de páginas dinâmicas:
+Se sua aplicação renderiza páginas HTML no servidor, a pasta views/ armazena esses
+templates. No Express.js, podemos usar motores (engines) de template como
+Handlebars (HBS), EJS ou Pug.
+Veja um exemplo de uso do Handlebars (views/home.hbs):
+<h1>Bem-vindo, {{nome}}!</h1>
+No server.js, renderizamos a página assim:
+31 | Página
+app.set('view engine', 'hbs');
+app.get('/', (req, res) => {
+ res.render('home', { nome: 'Aluno' });
+});
+Isso permite criar páginas dinâmicas com variáveis.
+g) server.js: ponto de entrada da aplicação:
+Este é o coração do projeto, onde iniciamos o Express.js, configuramos middlewares e
+definimos a porta do servidor. Na sequência, você pode acompanhar um exemplo de
+server.js básico:
+const express = require('express');
+const app = express();
+const usuariosRoutes = require('./routes/usuarios');
+app.use(express.json()); // Middleware para interpretar JSON
+app.use('/usuarios', usuariosRoutes);
+app.listen(3000, () => {
+ console.log('Servidor rodando na porta 3000');
+});
+Com isso, ao rodar node server.js, nossa aplicação estará pronta para receber
+requisições.
+h) package.json: lista de dependências e scripts:
+Este arquivo é gerado com o comando npm init e armazena informações sobre o
+projeto, como dependências instaladas e scripts de execução. Veja um exemplo de um
+arquivo package.json:
+{
+ "name": "meu-projeto-express",
+ "version": "1.0.0",
+ "dependencies": {
+ "express": "^4.18.2"
+ },
+ "scripts": {
+ "start": "node server.js"
+ }
+}
+Agora, podemos iniciar o projeto apenas rodando:
+npm start
+Aprendemos que organizar a estrutura de um projeto Express.js torna o
+desenvolvimento mais eficiente, modular e escalável. Criamos pastas específicas para
+32 | Página
+rotas, controladores, modelos e views, garantindo que cada parte do código tenha uma
+responsabilidade clara. Com essa estrutura, você pode desenvolver sistemas robustos
+e fáceis de manter.
+3.3 Definição de roteamento e manipulação de endpoints
+Roteamento refere-se ao processo de determinar um comportamento específico de um
+aplicativo. Ele é usado para definir como um aplicativo deve responder a uma
+solicitação de cliente para uma determinada rota, caminho ou URI (Uniform Resource
+Identifier) junto com um método de solicitação HTTP específico. Cada rota pode conter
+mais de uma função de manipulador, que é executada quando o usuário procura uma
+rota específica. Abaixo segue a estrutura do roteamento utilizada no Express:
+app.METHOD(PATH, HANDLER)
+Veja a definição de cada componente desta expressão:
+• app é apenas uma instância do módulo Express. Você pode usar qualquer
+variável de sua escolha.
+• METHOD é um método de solicitação HTTP, como GET, POST, PUT, DELETE etc.
+• PATH é a rota para o servidor para uma página da web específica.
+• HANDLER (manipulador) é a função de retorno de chamada que é executada
+quando a rota correspondente é encontrada.
+O Express.js facilita o gerenciamento de rotas, permitindo definir como a aplicação
+responde a diferentes requisições HTTP (GET, POST, PUT, DELETE). Vamos criar um
+exemplo de rota separada em um arquivo dentro do diretório routes/.
+a) Criando uma rota:
+Crie um arquivo routes/usuarios.js e adicione:
+const express = require('express');
+const router = express.Router();
+router.get('/', (req, res) => {
+ res.send('Lista de usuários');
+});
+router.post('/', (req, res) => {
+ res.send('Usuário criado');
+});
+module.exports = router;
+Imagine que estamos construindo um site e precisamos de uma “rota” que controle as
+requisições para gerenciar usuários. Primeiro, importamos o Express e criamos um
+roteador (router), que nos ajuda a definir caminhos para receber e responder
+solicitações.
+Posteriormente, criamos duas rotas: uma para listar usuários (GET /), que responde
+com Lista de usuários, e outra para criar um usuário (POST /), que responde com
+33 | Página
+Usuário criado. No final, exportamos o router, para que ele possa ser usado em
+outras partes do sistema.
+b) Importando as rotas no server.js:
+const express = require('express');
+const app = express();
+const usuariosRoutes = require('./routes/usuarios');
+app.use('/usuarios', usuariosRoutes);
+app.listen(3000, () => {
+ console.log('Servidor rodando na porta 3000');
+});
+Criamos um servidor com Express. Primeiro, importamos o Express e inicializamos o
+aplicativo (app), que será responsável por lidar com as requisições. Posteriormente,
+definimos as rotas dos usuários. Importamos um arquivo (usuariosRoutes), que
+contém as regras de acesso para /usuarios (por exemplo, listar ou criar usuários). O
+app.use('/usuarios', usuariosRoutes); diz que tudo que vier depois de
+/usuarios será tratado nesse arquivo.
+Por fim, iniciamos o servidor. Dizemos ao Express para escutar a porta 3000, e quando
+estiver pronto, exibe no console: Servidor rodando na porta 3000. Agora, ao
+acessar http://localhost:3000/usuarios, você verá a mensagem Lista de
+usuários e, se fizer uma requisição POST (utilize a ferramenta Postman para realizar
+o teste), receberá a mensagem Usuário criado.
+3.4 Conhecendo recursos do middleware no Express
+No Express, as funções de middleware são as funções que têm acesso aos objetos de
+solicitação e resposta junto com a próxima função presente no ciclo de solicitaçãoresposta do aplicativo. Essas funções são capazes de realizar as tarefas listadas
+abaixo:
+• Execução de qualquer código.
+• Modificação da solicitação e dos objetos de resposta.
+• Encerramento do ciclo de solicitação-resposta de aplicativos.
+• Chamamento do próximo middleware presente no ciclo.
+Observe que, caso a função atual não finalize o ciclo de solicitação-resposta, ela deve
+invocar a função next() para passar o controle para a próxima função de middleware
+disponível. Se não for feito, a solicitação ficará incompleta. Agora, para entender sobre
+as funções de middleware, apresentamos um pequeno exemplo que captura a data
+atual, concatena com uma mensagem personalizada e a exibe ao usuário:
+var express = require("express");
+const app = express();
+var requisicaoData = function (req, res, next) {
+34 | Página
+ req.requisicaoData = new Date().toISOString().slice(0, 10);
+ next();
+};
+app.use(requisicaoData);
+app.get("/", function (req, res) {
+ var mensagemResposta = "Olá pessoal!";
+ mensagemResposta +=
+ " Esta mensagem foi gerada na data: " + req.requisicaoData;
+ res.send(mensagemResposta);
+});
+//A porta é uma variável de ambiente
+const porta = process.env.PORT || 8080;
+app.listen(porta, () =>
+ console.log("Servidor inicializado na porta: " + porta)
+);
