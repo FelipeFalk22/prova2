@@ -1,0 +1,625 @@
+GET: utilizado para buscar informações no servidor. Ele não altera os dados e
+geralmente é usado para carregar páginas e listar recursos. Uma mensagem de
+sucesso GET retorna uma resposta contendo as informações solicitadas. Em
+um exemplo de uma aplicação, usamos o método GET para recuperar o clima
+atual para uma cidade específica.
+• POST: utilizado para enviar dados ao servidor. Diferente do GET, ele permite criar
+registros, como cadastrar um usuário ou enviar um formulário. Uma solicitação
+POST requer um corpo (body) no qual você define os dados da entidade a ser
+criada. Em um exemplo de uma aplicação meteorológica, poderíamos usar um
+método POST para adicionar dados meteorológicos sobre uma nova cidade.
+N
+37 | Página
+• PUT: atualiza um recurso existente no servidor. Ele envia um conjunto completo
+de informações para substituir os dados anteriores. O método PUT atualiza todo
+o recurso com dados que são passados na carga do corpo da solicitação HTTP.
+Se não houver recurso que corresponda à solicitação, ele criará um recurso. Em
+nosso aplicativo meteorológico, podemos usar o método PUT para atualizar
+todos os dados climáticos sobre uma cidade específica.
+• DELETE: remove um recurso do servidor, sendo frequentemente utilizado em
+APIs (Application Programming Interface) para excluir registros. Em nosso
+aplicativo de clima, poderíamos usar o método DELETE para excluir uma cidade
+que não queríamos mais rastrear por algum motivo.
+Cada método HTTP tem um propósito específico e seu uso correto garante aplicações
+mais organizadas e seguras. Por exemplo, utilizar um POST para deletar um recurso
+em vez de um DELETE pode confundir outros desenvolvedores e comprometer a
+integridade dos dados. Abaixo está um exemplo mostrando o uso de alguns dos
+principais métodos HTTP.
+var express = require("express");
+const app = express();
+app.use(express.json());
+app.get("/", function (req, res) {
+ console.log("Requisição GET recebida para a rota URI /");
+ res.send("Seja bem-vindo à rota principal (/)!");
+});
+app.post("/adicionar", function (req, res) {
+ console.log("Requisição POST recebida para a rota URI /adicionar");
+ res.send("Seja bem-vindo à rota de adicionar (/adicionar)!");
+});
+app.put("/atualizar", function (req, res) {
+ console.log("Requisição PUT recebida para a rota URI /atualizar");
+ res.send("Seja bem-vindo à rota de atualizar (/atualizar)!");
+});
+app.delete("/deletar", function (req, res) {
+ console.log("Requisição DELETE recebida para a rota URI /deletar");
+ res.send("Seja bem-vindo à rota de deletar (/deletar)!");
+});
+app.get("/listar", function (req, res) {
+ console.log("Requisição GET recebida para a rota URI /listar");
+ res.send("Seja bem-vindo à rota de listagem (/listar)!");
+});
+//A porta é uma variável de ambiente
+const porta = process.env.PORT || 3000;
+38 | Página
+app.listen(porta, () =>
+ console.log("Servidor inicializado na porta: " + porta)
+);
+Após inicializar a aplicação apresentada anteriormente utilizando o módulo express,
+iremos realizar o teste utilizando a ferramenta Postman. Postman é um aplicativo de
+desktop e web que permite fazer solicitações a uma API a partir de uma interface
+gráfica de usuário.
+Antes de começar a usar o Postman, você precisará ter o acesso à ferramenta. Ter uma
+conta gratuita do Postman permite sincronizar e fazer backup do seu trabalho para que
+você possa acessá-lo em diferentes máquinas. Com uma conta do Postman, você
+também pode colaborar com outras pessoas em seus projetos de API.
+Antes de se inscrever em uma conta do Postman, acesse o aplicativo da web pelo
+seguinte link: https://www.postman.com/. O Postman solicita que você faça login
+ou cadastre-se. Você pode se inscrever usando um endereço de e-mail ou sua conta
+do Google. Agora, vamos testar esta API.
+a) Buscando dados com GET:
+1.Abra o Postman.
+2.No canto superior esquerdo, escolha o método GET.
+3.No campo de URL, digite: http://127.0.0.1:3000/listar.
+4.Clique no botão “Send” para enviar a requisição.
+5.Observe a resposta no painel abaixo.
+b) Enviando dados com POST:
+1.No Postman, altere o método para POST.
+2.No campo de URL, digite: http://127.0.0.1:3000/adicionar.
+3.Vá até a aba “Body”, clique em “raw” e selecione JSON.
+4.Digite um JSON de exemplo:
+{
+ "titulo": "Meu Primeiro Post",
+ "postagem": "Este é um teste com Postman!",
+ "idUsuario": 1
+}
+5.Clique em “Send” e veja a resposta da API.
+c) Atualizando dados com PUT:
+1.Mude o método para PUT.
+2.Use o URL: http://127.0.0.1:3000/atualizar.
+3.Na seção “Body”, envie o seguinte JSON:
+{
+ "titulo": "Título Atualizado"
+}
+39 | Página
+4.Clique em “Send” e veja a resposta da API.
+d) Deletando dados com DELETE:
+1.Mude o método para DELETE.
+2.Digite o URL válido: http://127.0.0.1:3000/deletar.
+3.Clique em “Send” e veja a resposta da API.
+Como você pode perceber, existem quatro métodos HTTP principais que podem ser
+fornecidos na solicitação. Esses métodos ajudam a especificar a operação solicitada
+pelo usuário e são utilizados no estilo arquitetural REST (Representational State
+Transfer). As informações relacionadas sobre a construção de APIs utilizando o estilo
+arquitetural REST e que tem relação com os métodos HTTP serão apresentadas com
+mais detalhes posteriormente.
+4.2 Manipulando parâmetros e o corpo das requisições
+Uma requisição HTTP pode conter parâmetros no URL e dados no corpo da requisição,
+dependendo do tipo de método utilizado. Vamos entender a diferença entre eles:
+a) Parâmetros no URL (query params e route params):
+Query params são passados no URL após o ponto de interrogação (?). Exemplo: GET
+/usuarios?nome=João&idade=25. Já route params fazem parte da estrutura do
+URL e geralmente identificam um recurso específico. Exemplo: GET /usuarios/123.
+b) Corpo da requisição (body params):
+Usado nos métodos POST e PUT, o corpo da requisição permite enviar dados
+estruturados em JSON, XML ou outros formatos. Exemplo de um JSON enviado via
+POST:
+{
+ "nome": "João",
+ "idade": 25
+}
+ATENÇÃO:
+Você sabia que as informações enviadas via GET aparecem no URL,
+enquanto as enviadas via POST ficam ocultas no corpo da requisição? Isso
+significa que POST é mais seguro para dados sensíveis, como senhas e
+informações pessoais, pois não ficam visíveis na barra de endereços nem
+armazenadas no histórico do navegador!
+Como você pode identificar, o corpo da requisição não aparece no URL, garantindo
+maior segurança e privacidade, especialmente para dados sensíveis. A escolha entre
+parâmetros no URL e no corpo da requisição depende do contexto. Informações que
+identificam um recurso, como um ID, geralmente vão no URL, enquanto dados
+detalhados para criação ou atualização ficam no corpo da requisição.
+40 | Página
+4.3 Criando respostas personalizadas
+Após processar uma requisição, o servidor responde ao cliente com um código de
+status HTTP e, em muitos casos, um corpo de resposta contendo os dados solicitados.
+Vamos ver alguns exemplos de respostas personalizadas:
+• 200 OK indica que a requisição foi processada e os dados serão retornados.
+• 201 Created indica que um novo recurso foi criado com sucesso.
+• 400 Bad Request indica que a requisição está malformada ou contém dados
+inválidos.
+• 401 Unauthorized indica que o usuário não tem permissão para acessar o
+recurso solicitado.
+• 404 Not Found indica que o recurso solicitado não foi encontrado no servidor.
+• 500 Internal Server Error indica um erro no servidor ao processar a
+requisição.
+Respostas personalizadas podem conter dados estruturados em JSON para facilitar a
+leitura e o processamento pela aplicação cliente. Veja um exemplo de resposta bem
+formatada:
+{
+ "status": 200,
+ "mensagem": "Usuário cadastrado com sucesso",
+ "dados": {
+ "id": 123,
+ "nome": "João"
+ }
+}
+Retornar respostas claras e padronizadas melhora a experiência do usuário e a
+manutenção do sistema. Veja, na sequência, um exemplo em Node.js com Express
+demonstrando como retornar respostas personalizadas com diferentes status HTTP e
+JSON.
+a) Criar o projeto e instalar o Express:
+Inicialmente precisamos criar o projeto e instalar as dependências. Então, siga os
+passos abaixo:
+mkdir meu-servidor-express
+cd meu-servidor-express
+npm init -y
+npm install express
+b) Criar o arquivo server.js:
+Agora, crie um arquivo chamado server.js e adicione o seguinte código:
+const express = require('express');
+const app = express();
+41 | Página
+// Middleware para interpretar JSON
+app.use(express.json());
+// Rota de sucesso (200 OK)
+app.get('/sucesso', (req, res) => {
+ res.status(200).json({
+ status: "success",
+ message: "Requisição processada com sucesso!"
+ });
+});
+// Rota de criação de recurso (201 Created)
+app.post('/criar', (req, res) => {
+ const { nome, email } = req.body;
+ if (!nome || !email) {
+ return res.status(400).json({
+ status: "error",
+ message: "Nome e email são obrigatórios!"
+ });
+ }
+ res.status(201).json({
+ status: "success",
+ message: "Usuário criado com sucesso!",
+ data: { nome, email }
+ });
+});
+// Rota de erro (400 Bad Request)
+app.get('/erro', (req, res) => {
+ res.status(400).json({
+ status: "error",
+ message: "Requisição inválida! Verifique os parâmetros enviados."
+ });
+});
+// Rota não encontrada (404 Not Found)
+app.use((req, res) => {
+ res.status(404).json({
+ status: "error",
+ message: "Rota não encontrada! Verifique o URL."
+ });
+42 | Página
+});
+// Iniciando o servidor na porta 3000
+app.listen(3000, () => {
+ console.log("Servidor rodando na porta 3000");
+});
+Com esse exemplo, aprendemos a enviar respostas personalizadas no Express.js,
+incluindo códigos de status e mensagens em JSON. Isso melhora a comunicação entre
+back-end e front-end, garantindo que os clientes da API recebam feedbacks claros
+sobre cada requisição. Teste este exemplo com a ferramenta Postman. Posteriormente,
+veja os principais pontos que merecem destaque:
+• Middleware express.json() permite que o Express interprete requisições
+com corpo em JSON.
+• res.status(200).json({...}) retorna uma resposta bem-sucedida com
+código 200 OK.
+• res.status(201).json({...}) indica que um novo recurso foi criado (201
+Created).
+• res.status(400).json({...}) indica erro do cliente, como requisição
+inválida (400 Bad Request).
+• res.status(404).json({...}) captura todas as requisições que não
+encontraram rota (404 Not Found).
+Entender como funcionam as requisições e respostas HTTP é essencial para
+desenvolver aplicações web robustas e eficientes. Aprendemos os principais métodos
+HTTP (GET, POST, PUT, DELETE), a diferença entre parâmetros no URL e corpo da
+requisição, e como criar respostas personalizadas para tornar nossas APIs mais claras
+e seguras. Agora, você está pronto para aplicar esses conceitos na construção de
+aplicações interativas e bem estruturadas!
+
+
+
+
+ue tal tornar seu desenvolvimento mais ágil? Nesta seção, você aprenderá a
+instalar e configurar o Nodemon, uma ferramenta essencial para
+desenvolvedores que utilizam Node.js. O Nodemon monitora automaticamente
+as alterações no código-fonte e reinicia o servidor sempre que houver uma
+modificação, evitando que você tenha que fazer isso manualmente. Exploraremos as
+diferentes formas de instalação – global e local – e como configurá-lo para otimizar
+seu fluxo de trabalho.
+Você entenderá como o Nodemon permite uma reinicialização automática, tornando o
+processo de teste e depuração mais eficiente. Além disso, veremos como personalizar
+o comportamento do Nodemon com o arquivo nodemon.json, definir quais arquivos
+e diretórios devem ser monitorados e integrá-lo ao package.json para facilitar sua
+execução. Ao final desta seção, você terá identificado diversas vantagens de utilização
+do Nodemon e terá um ambiente de desenvolvimento mais produtivo, podendo focar
+no código sem se preocupar em reiniciar o servidor manualmente.
+5 UTILIZAÇÃO DO PACOTE NODEMON
+Você já percebeu que, ao desenvolver uma aplicação em Node.js, sempre que
+alteramos o código, precisamos parar e reiniciar o servidor manualmente? Esse
+processo pode ser cansativo e improdutivo. É aqui que entra o Nodemon, uma
+ferramenta que monitora automaticamente as alterações no código-fonte e reinicia o
+servidor sempre que um arquivo for modificado. Isso melhora significativamente o
+fluxo de desenvolvimento e evita erros causados por esquecermos de reiniciar a
+aplicação após uma alteração importante.
+5.1 Processo de instalação do Nodemon
+A instalação do Nodemon é muito simples e pode ser feita de duas maneiras:
+localmente no projeto ou globalmente no sistema. A escolha depende da necessidade
+do desenvolvedor. Se for utilizado apenas dentro de um projeto específico, a instalação
+local é suficiente. Já se for usado em vários projetos, a instalação global pode ser mais
+conveniente.
+ATENÇÃO:
+O nome Nodemon vem da junção de Node.js + daemon, pois ele funciona
+como um “daemon” (processo em segundo plano) que monitora
+mudanças nos arquivos e reinicia automaticamente o servidor. Com ele,
+você ganha mais produtividade e evita a repetitiva tarefa de reiniciar
+manualmente a aplicação a cada alteração no código!
+Para instalar o Nodemon de forma global use este comando:
+Q
+45 | Página
+npm install -g nodemon
+Isso permite que o Nodemon seja executado a partir de qualquer projeto no sistema
+sem precisar ser instalado novamente. Para instalar o Nodemon como dependência de
+desenvolvimento execute esta instrução:
+npm install --save-dev nodemon
+Essa opção adiciona o Nodemon ao package.json do projeto, garantindo que todos
+que clonarem o repositório tenham a ferramenta instalada ao executar npm install.
+Após a instalação, o Nodemon pode ser utilizado no lugar do node para rodar um
+servidor. Por exemplo, ao invés de rodar:
+node server.js
+Podemos usar:
+nodemon server.js
+Assim, qualquer alteração no código reiniciará automaticamente o servidor, sem
+precisar interromper e rodar o comando novamente.
+5.2 Acelerando o desenvolvimento com reinicialização automática
+O Nodemon é altamente configurável e pode ser ajustado conforme a necessidade do
+projeto. Ele permite definir arquivos e diretórios que devem ser monitorados ou
+ignorados, ajudando a evitar reinicializações desnecessárias.
+Podemos personalizar o comportamento do Nodemon criando um arquivo
+nodemon.json na raiz do projeto:
+{
+ "watch": ["src"],
+ "ignore": ["node_modules"],
+ "ext": "js,json"
+}
+Aqui, estamos dizendo ao Nodemon para monitorar a pasta src/, ignorar
+node_modules/ e reiniciar apenas quando arquivos .js ou .json forem alterados.
+Uma prática comum é criar um script no package.json para rodar o Nodemon de
+forma padronizada:
+"scripts": {
+ "start": "node server.js",
+ "dev": "nodemon server.js"
+}
+Agora, podemos rodar o servidor com reinicialização automática usando:
+npm run dev
+Isso evita a necessidade de lembrar o comando nodemon server.js toda vez.
+46 | Página
+5.3 Benefícios do Nodemon no fluxo de desenvolvimento
+O Nodemon traz diversas vantagens para o dia a dia do desenvolvedor:
+• Maior produtividade: automatiza a reinicialização do servidor sempre que há
+uma alteração no código.
+• Facilidade na depuração: testar e corrigir erros se torna mais rápido, pois não
+há necessidade de reiniciar manualmente a aplicação.
+• Menos erros por esquecimento: como o servidor reinicia automaticamente, não
+há risco de rodar uma versão desatualizada do código.
+• Flexibilidade: pode ser configurado para monitorar apenas arquivos específicos
+e ignorar diretórios desnecessários.
+O Nodemon é uma ferramenta essencial para desenvolvedores que trabalham com
+Node.js, pois automatiza a reinicialização do servidor, permitindo um fluxo de trabalho
+mais ágil e eficiente. Aprendemos como instalá-lo globalmente ou localmente, como
+configurar um arquivo nodemon.json, e como integrá-lo ao package.json para
+facilitar sua execução. Agora, você pode utilizá-lo para otimizar seu processo de
+desenvolvimento e focar no que realmente importa: escrever código de qualidade!
+
+
+
+
+
+
+
+6.1 Processo de configuração de um middleware no Express.js
+O Express.js é um dos frameworks mais utilizados no desenvolvimento back-end com
+Node.js e permite a criação de middlewares personalizados. Para adicionar um
+middleware no Express, utilizamos o método app.use(). Veja um exemplo básico de
+middleware que registra o horário de cada requisição recebida:
+const express = require('express');
+const app = express();
+// Middleware que registra a data e hora da requisição
+app.use((req, res, next) => {
+ console.log(`Requisição recebida em: ${new Date().toISOString()}`);
+ next(); // Passa para o próximo middleware ou rota
+});
+app.get('/', (req, res) => {
+ res.send('Olá, mundo!');
+});
+app.listen(3000, () => {
+ console.log('Servidor rodando na porta 3000');
+});
+50 | Página
+Neste exemplo, sempre que uma requisição for recebida, a data e hora serão
+registradas no console, antes que a requisição siga para a próxima etapa.
+Quando um cliente envia uma requisição HTTP para um servidor, ela contém diferentes
+partes, como:
+• Headers (cabeçalhos): informações sobre a requisição, como tipo de conteúdo
+(Content-Type), método HTTP e status da conexão.
+• Payload (corpo da requisição): os dados enviados na requisição, como um
+formulário preenchido pelo usuário ou informações de um JSON enviado para
+uma API.
+Exemplo de requisição HTTP com payload em JSON:
+POST /api/usuarios HTTP/1.1
+Host: exemplo.com
+Content-Type: application/json
+Content-Length: 56
+{
+ "nome": "João Silva",
+ "email": "joao@email.com"
+}
+Neste exemplo:
+• O payload é o JSON { "nome": "João Silva", "email":
+"joao@email.com" }.
+• Ele contém os dados reais que serão processados pelo servidor.
+ATENÇÃO:
+O termo payload refere-se ao conteúdo da mensagem enviada em uma
+requisição ou resposta HTTP, sem incluir os metadados do protocolo. Em
+outras palavras, é a parte útil dos dados transmitidos entre um cliente
+(navegador, aplicativo) e um servidor em uma comunicação web.
+O payload também pode ser parte da resposta HTTP enviada pelo servidor ao cliente.
+Nesse caso, ele contém os dados solicitados, como uma lista de usuários ou um
+documento em JSON. Exemplo de resposta HTTP com payload:
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 68
+{
+ "status": "sucesso",
+ "mensagem": "Usuário cadastrado com sucesso"
+}
+51 | Página
+Aqui, o payload contém uma mensagem JSON informando o sucesso do cadastro. Veja
+alguns cuidados com o payload:
+• Validação de dados: sempre valide e sanitize os dados recebidos para evitar
+ataques, como injeção de SQL ou ataques de negação de serviço (DoS – Denial
+of Service).
+• Uso adequado do método HTTP: nem todas as requisições possuem payload.
+Métodos como GET não possuem corpo de requisição, pois servem apenas para
+recuperar dados.
+• Tamanho do payload: requisições com payloads muito grandes podem
+sobrecarregar o servidor. Por isso, frameworks como Express.js permitem
+limitar o tamanho dos dados aceitos.
+Para instalar o Express no seu projeto Node.js, primeiro, certifique-se de ter o Node.js
+instalado em sua máquina. Depois, crie um diretório para o projeto e inicialize um
+arquivo package.json executando npm init -y. Em seguida, instale o Express com
+o comando npm install express. Isso adicionará o framework ao seu projeto e
+registrará a dependência no arquivo package.json, permitindo que você comece a
+desenvolver seu servidor web de forma rápida e eficiente.
+6.2 O que é o body-parser e para que ele serve?
+Agora que já entendemos o que são middlewares, vamos falar de um dos pacotes mais
+utilizados em aplicações web: o body-parser. Sempre que um cliente envia dados
+para o servidor – seja através de um formulário ou de uma API – essas informações
+precisam ser interpretadas e convertidas em um formato utilizável. O body-parser é
+um middleware que processa o corpo da requisição, convertendo os dados em um
+objeto JavaScript acessível na aplicação.
+Antes do Express.js 4.16.0, era necessário instalar o body-parser separadamente.
+Agora, ele já está embutido no Express e pode ser utilizado diretamente. No entanto,
+ainda é comum encontrarmos projetos que utilizam a versão externa do pacote.
+Para instalar o body-parser, utilizamos o seguinte comando:
+npm install body-parser
+Depois, basta adicioná-lo ao código do servidor Express:
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+// Configuração do body-parser para interpretar JSON e formulários
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.post('/dados', (req, res) => {
+ console.log(req.body); // Exibe os dados recebidos
+ res.send('Dados recebidos!');
+52 | Página
+});
+app.listen(3000, () => {
+ console.log('Servidor rodando na porta 3000');
+});
+Agora, sempre que enviarmos um formulário ou um JSON via POST, os dados poderão
+ser acessados através de req.body, desde que o middleware adequado esteja
+configurado no Express.js. Para isso, utilizamos express.json() para processar
+JSON e express.urlencoded({ extended: true }) para dados de formulários.
+Isso facilita a manipulação das informações dentro da aplicação, permitindo
+validações, armazenamento no banco de dados e processamento eficiente dos dados
+recebidos.
+6.3 Quando usar o body-parser?
+O body-parser é extremamente útil em diversas situações, como:
+• APIs RESTful: para processar requisições que enviam dados no corpo, como
+criação de usuários e login.
+• Formulários HTML: para interpretar dados enviados via POST de formulários
+tradicionais.
+• Manipulação de JSON: para trabalhar com APIs que enviam e recebem
+informações no formato JSON.
+No entanto, é importante lembrar que nem todas as requisições precisam de um bodyparser. Por exemplo, requisições do tipo GET não contêm um corpo, pois apenas
+solicitam dados ao servidor. Assim, esse middleware é utilizado principalmente em
+requisições POST, PUT e PATCH.
+Os middlewares desempenham um papel essencial no desenvolvimento de aplicações
+web, atuando como intermediários no processamento de requisições. Aprendemos que
+eles podem modificar, validar ou até mesmo interromper requisições antes que
+cheguem à lógica principal da aplicação. Dentro desse conceito, conhecemos o bodyparser e suas principais utilizações, um middleware amplamente utilizado para
+interpretar dados no corpo das requisições HTTP, facilitando a comunicação entre
+cliente e servidor. Com esse conhecimento, agora você pode estruturar middlewares
+eficientes e processar dados com segurança e eficiência no Express.js!
+
+
+
+omo proteger informações sensíveis no seu projeto? Nesta seção, você
+conhecerá o uso de arquivos .env para armazenar variáveis de ambiente, como
+chaves de API, credenciais de banco de dados e configurações sensíveis. Ao
+invés de expor esses dados diretamente no código, utilizamos arquivos .env para
+manter a segurança e facilitar a configuração do ambiente de desenvolvimento. Você
+aprenderá como criar e configurar esse arquivo e como integrá-lo ao seu projeto
+usando pacotes como dotenv no Node.js.
+Armazenar credenciais de forma incorreta pode expor sua aplicação a riscos, como
+vazamento de dados e ataques cibernéticos. Por isso, além de utilizar o arquivo .env,
+você aprenderá boas práticas para manter suas credenciais protegidas, como não
+versionar o arquivo .env no Git, definir permissões de acesso e utilizar variáveis de
+ambiente no servidor de produção. Ao final desta seção, você será capaz de gerenciar
+configurações sensíveis de forma segura, evitando brechas de segurança no seu
+projeto.
+7 GERENCIAMENTO DE VARIÁVEIS DE AMBIENTE
+Ao desenvolver aplicações web, frequentemente precisamos armazenar informações
+sensíveis, como credenciais de banco de dados, chaves de API e configurações de
+autenticação. Mas onde salvar esses dados de maneira segura? Guardá-los
+diretamente no código pode ser perigoso, pois se o código for compartilhado ou
+publicado em um repositório público, essas informações podem ser expostas. É aqui
+que entram as variáveis de ambiente, um recurso essencial para separar configurações
+sensíveis do código-fonte da aplicação.
+Variáveis de ambiente são valores configuráveis no sistema operacional ou em
+arquivos externos, permitindo que um software acesse esses dados sem precisar
+armazená-los no código. Esse método melhora a segurança, a flexibilidade e a
+manutenção do sistema. Vamos explorar como utilizá-las de forma eficiente e segura.
+7.1 Criando arquivos .env
+Para facilitar o gerenciamento de variáveis de ambiente em projetos Node.js, utilizamos
+arquivos .env. Esse arquivo armazena configurações de maneira organizada,
+permitindo que sejam carregadas dinamicamente no código. No Express.js, podemos
+utilizar o pacote dotenv para integrar esse recurso.
+Para instalar o pacote dotenv, utilize este comando:
+npm install dotenv
+Crie um arquivo chamado .env na raiz do seu projeto e adicione as seguintes
+configurações:
+C
+55 | Página
+PORT=3000
+DATABASE_URL=mongodb+srv://usuario:senha@servidor.mongodb.net/meubanco
+SECRET_KEY=meu_segredo_super_seguro
+Agora, no seu código Node.js, importe o dotenv no início do arquivo principal
+(server.js ou app.js):
+require('dotenv').config();
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(PORT);
+Como você viu, o pacote dotenv permite carregar variáveis de ambiente a partir de um
+arquivo .env, evitando que informações sensíveis, como credenciais de banco de
+dados e chaves de API, fiquem expostas no código. Com isso, podemos acessar essas
+variáveis usando process.env.NOME_DA_VARIAVEL, tornando o código mais
+seguro, dinâmico e fácil de configurar para diferentes ambientes (desenvolvimento,
+teste e produção). Basta instalar o dotenv com npm install dotenv e adicioná-lo
+ao projeto com require('dotenv').config(), garantindo que todas as variáveis
+sejam carregadas corretamente.
+Em complemento, você precisa compreender que existem diferentes ambientes que
+compõem o ciclo de desenvolvimento de software, a saber: ambiente de
+desenvolvimento, ambiente de teste, ambiente de homologação e ambiente de
+produção. Veja o significado de cada um destes ambientes na Figura 7.1.
+Figura 7.1: Diferentes tipos de ambientes
+Fonte: Elaborada pelo autor (2025)
+Nessa estrutura, o uso do dotenv é fundamental para gerenciar configurações
+específicas de cada ambiente sem expor informações sensíveis no código-fonte. Com
+ele, podemos definir variáveis como URLs de banco de dados, chaves de API e
+credenciais de forma segura e organizada dentro de um arquivo .env, evitando a
+Ambiente de
+desenvolvimento
+• Este é onde os
+desenvolvedores
+escrevem, testam e
+depuram o código,
+utilizando
+ferramentas e
+recursos que
+facilitam a
+programação.
+Ambiente de teste
+• É uma réplica do
+ambiente de
+produção e permite
+que a equipe de
+qualidade execute
+testes funcionais e
+não funcionais para
+garantir que o
+software funciona
+corretamente.
+Ambiente de
+homologação
+•Onde o software é
+validado pelo cliente
+ou pelos
+stakeholders para
+assegurar que
+atende aos
+requisitos
+especificados.
+Ambiente de
+produção
+•Onde o software é
+disponibilizado para
+os usuários finais.
+56 | Página
+necessidade de alterar o código ao alternar entre os ambientes. Isso não apenas
+melhora a segurança, mas também torna a configuração do sistema mais flexível e
+padronizada, garantindo que diferentes equipes possam trabalhar de maneira
+consistente e segura.
+7.2 Dicas e boas práticas de gerenciamento de credenciais
+Agora que sabemos como usar arquivos .env, precisamos garantir que essas
+informações não sejam expostas acidentalmente. Algumas práticas fundamentais
+ajudam a evitar falhas de segurança:
+• Não versionar o arquivo .env no Git: para evitar que credenciais sejam
+compartilhadas acidentalmente, adicionamos o .env ao arquivo .gitignore.
+Isso impede que o arquivo seja enviado para repositórios remotos, protegendo
+dados sensíveis.
+# Arquivo .gitignore
+.env
+• Criar um arquivo .env.example: para que outros desenvolvedores saibam
+quais variáveis precisam ser configuradas sem expor valores reais. Isso ajuda
+a manter o padrão do projeto e facilita a configuração do ambiente:
+PORT=
+DATABASE_URL=
+SECRET_KEY=
+• Usar variáveis de ambiente no servidor de produção: em servidores cloud, como
+Heroku, AWS ou DigitalOcean, não utilizamos arquivos .env. Em vez disso,
+definimos variáveis de ambiente diretamente no painel de configuração do
+serviço. Isso mantém a aplicação mais segura e evita a necessidade de
+armazenar arquivos sensíveis. Por exemplo, no Heroku usamos:
+heroku config:set SECRET_KEY=meu_segredo_super_seguro
+ATENÇÃO:
+Nos pipelines de CI/CD, o uso do dotenv é substituído pelo gerenciamento
+seguro de variáveis de ambiente diretamente na ferramenta de integração
+contínua! Plataformas como GitHub Actions, GitLab CI/CD e Jenkins
+permitem definir essas variáveis no painel de configurações, garantindo
+que credenciais nunca fiquem expostas no código e mantendo a
+automação segura e eficiente.
+Agora que sabemos como usar arquivos .env, é essencial seguir boas práticas para
+proteger informações sensíveis. Nunca versione o .env no Git, utilize um
+.env.example para documentar as variáveis necessárias e, em produção, armazene
+as credenciais diretamente no servidor. Essas práticas garantem mais segurança e
+evitam exposições acidentais.
+57 | Página
+7.3 Por que usar variáveis de ambiente?
+O uso correto de variáveis de ambiente traz vários benefícios para o desenvolvimento
+de aplicações:
+• Segurança: protege credenciais e dados sensíveis contra exposições
+acidentais.
+• Flexibilidade: permite alterar configurações sem modificar o código.
+• Facilidade na implantação: facilita a configuração do ambiente de produção.
+• Reutilização de código: um mesmo código pode ser utilizado em diferentes
+ambientes (desenvolvimento, teste e produção) apenas alterando variáveis de
+ambiente.
+O gerenciamento de variáveis de ambiente é uma prática fundamental para desenvolver
+aplicações seguras e organizadas. Aprendemos que o uso de arquivos .env, junto com
+o pacote dotenv, facilita a configuração de aplicações em Node.js.
+Além disso, adotamos boas práticas para proteger informações sensíveis, como não
+versionar arquivos .env, criar um .env.example, e utilizar variáveis de ambiente no
+servidor de produção. Agora, você está pronto para aplicar esse conhecimento e manter
+suas aplicações mais seguras e flexíveis!
