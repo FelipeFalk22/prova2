@@ -1,0 +1,102 @@
+console.log("Início");
+setTimeout(() => {
+ console.log("Execução assíncrona");
+}, 2000);
+console.log("Fim");
+
+
+Saída esperada:
+Início
+Fim
+Execução assíncrona
+
+
+{
+ "nome": "João",
+ "idade": 25,
+ "cidade": "São Paulo",
+ "hobbies": ["futebol", "leitura", "programação"],
+ "endereco": {
+ "rua": "Avenida Paulista",
+ "numero": 1000,
+ "cep": "01310-100"
+ }
+}
+
+
+Veja, a seguir, os elementos do JSON:
+• Chaves: sempre escritas entre aspas duplas ("chave").
+• Valores: podem ser números (25), strings ("São Paulo"), booleanos (true ou
+false), arrays (["futebol", "leitura"]), objetos aninhados
+("endereco": {}) ou null.
+• Arrays: conjuntos de valores organizados dentro de [].
+• Objetos aninhados: o JSON pode conter outros objetos dentro dele, organizando
+melhor os dados.
+Vamos supor que temos um arquivo dados.json com o seguinte conteúdo:
+{
+ "nome": "Lucas",
+ "idade": 25,
+ "curso": "Desenvolvimento Web"
+}
+
+
+Podemos ler esse arquivo no Node.js com o módulo fs assim:
+const fs = require('fs');
+fs.readFile('dados.json', 'utf8', (err, data) => {
+ if (err) {
+ console.error('Erro ao ler o arquivo', err);
+ return;
+ }
+ const objeto = JSON.parse(data);
+ console.log(objeto.nome); // Saída: Lucas
+});
+
+
+Isso significa que podemos armazenar configurações, listas de dados e até mesmo
+simular um banco de dados com JSON. Muitas APIs REST usam JSON para enviar e
+10 | Página
+receber dados. Por exemplo, em um servidor Node.js com Express, podemos criar um
+endpoint que retorna JSON:
+const express = require('express');
+const app = express();
+app.get('/usuario', (req, res) => {
+ res.json({ nome: 'Lucas', idade: 25, curso: 'Desenvolvimento Web' });
+});
+app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
+O Node.js utiliza JSON de forma nativa, facilitando a troca de informações com bancos
+de dados, APIs RESTful e outras aplicações. Para manipular JSON no Node.js, podemos
+converter objetos para JSON e vice-versa com os métodos JSON.stringify() e
+JSON.parse().
+Veja um exemplo de conversão de um objeto JavaScript para JSON:
+
+const usuario = { nome: "João", idade: 25, cidade: "São Paulo" };
+const jsonUsuario = JSON.stringify(usuario);
+console.log(jsonUsuario); // {"nome":"João","idade":25,"cidade":"São Paulo"}
+
+Veja outro exemplo de conversão de JSON para um objeto JavaScript:
+
+const jsonData = '{"nome": "João", "idade": 25, "cidade": "São Paulo"}';
+const objetoUsuario = JSON.parse(jsonData);
+console.log(objetoUsuario.nome); // João
+
+Essas funções são essenciais para comunicação com APIs e manipulação de arquivos
+JSON, pois permitem a conversão entre o formato textual JSON e os objetos
+manipuláveis no código.
+Ao fazer requisições a uma API REST, geralmente o servidor responde com um JSON
+contendo as informações solicitadas. Por exemplo, uma API que retorna dados de um
+usuário pode enviar uma resposta no seguinte formato:
+{
+ "status": "sucesso",
+ "dados": {
+ "id": 1,
+ "nome": "João",
+ "idade": 25
+ }
+}
+Além disso, bancos de dados NoSQL, como o MongoDB, armazenam dados
+diretamente no formato JSON, facilitando a integração com aplicações Node.js.
+11 | Página
+Como você pode perceber, ele é estruturado de forma simples, utilizando chaves e
+valores, parecido com um objeto JavaScript. O Node.js utiliza JSON nativamente,
+facilitando a troca de informações com bancos de dados, APIs e outros sistemas.
+
